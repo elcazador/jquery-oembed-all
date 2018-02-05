@@ -288,7 +288,46 @@
                 if (embedProvider.apikey) {
                     src = src.replace('_APIKEY_', settings.apikeys[embedProvider.name]);
                 }
+                if (settings.maxHeight && settings.maxWidth) {
 
+                    if (settings.useResponsiveResize) {
+
+                        var ratio = 0; // Used for aspect ratio
+
+                        var newWidth = width;
+                        var newHeight = height;
+
+                        // Check if the current width is larger than the max
+                        if (width > settings.maxWidth) {
+                            ratio = settings.maxWidth / width;
+
+                            newWidth = settings.maxWidth;
+                            newHeight = height * ratio;
+
+                            // reset
+                            height = height * ratio;
+                            width = width * ratio;
+                        }
+
+                        // Check if current height is larger than max
+                        if (height > settings.maxHeight) {
+                            ratio = settings.maxHeight / height;
+
+                            newHeight = settings.maxHeight;
+                            newWidth = width * ratio;
+
+                            // reset
+                            width = width * ratio;
+                        }
+
+                        height = newHeight;
+                        width = newWidth;
+                    } else {
+                        height = settings.maxHeight;
+                        width = settings.maxWidth;
+                    }
+
+                }
                 var code = $('<' + tag + '/>').attr('src', src).attr('width', width)
                     .attr('height', height)
                     .attr('allowfullscreen', embedProvider.embedtag.allowfullscreen || 'true')
@@ -508,8 +547,63 @@
                     datareturn: function (results) {
                         if (results.json.type != 'video' && (results.json.url || results.json.thumbnail_url)) {
                             return '<img src="' + (results.json.url || results.json.thumbnail_url) + '" />';
+                        } else if (results.json.html.indexOf("iframe")) {
+              // Quick fix to handle attribute less html5 properties in ckeditor
+                            if (results.json.html.indexOf("allowfullscreen>")) {
+                                results.json.html = results.json.html.replace('allowfullscreen>', 'allowfullscreen="false">');
                         }
-                        return results.json.html || ''
+
+                            var html = $.parseHTML(results.json.html);
+
+                            var width = html[0].width;
+                            var height = html[0].height;
+
+                            if (settings.maxHeight && settings.maxWidth) {
+
+                                if (settings.useResponsiveResize) {
+
+                                    var ratio;
+
+                                    var newWidth = width;
+                                    var newHeight = height;
+
+                                    // Check if the current width is larger than the max
+                                    if (width > settings.maxWidth) {
+                                        ratio = settings.maxWidth / width;
+
+                                        newWidth = settings.maxWidth;
+                                        newHeight = height * ratio;
+
+                                        // reset
+                                        height = height * ratio;
+                                        width = width * ratio;
+                                    }
+
+                                    // Check if current height is larger than max
+                                    if (height > settings.maxHeight) {
+                                        ratio = settings.maxHeight / height;
+
+                                        newHeight = settings.maxHeight;
+                                        newWidth = width * ratio;
+                                    }
+
+                                    height = newHeight;
+                                    width = newWidth;
+                                } else {
+                                    height = settings.maxHeight;
+                                    width = settings.maxWidth;
+
+
+                                }
+
+                            }
+
+                            html[0].width = width;
+                            html[0].height = height;
+
+                            return html[0].outerHTML;
+                        }
+                        return results.json.html || '';
                     }
                 };
             }
