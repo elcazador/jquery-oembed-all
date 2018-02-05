@@ -54,6 +54,7 @@
 
             if (resourceURL !== null && resourceURL !== undefined) {
                 //Check if shorten URL
+                if (settings.expandUrl) {
                 for (var j = 0, l = shortURLList.length; j < l; j++) {
                     var regExp = new RegExp('://' + shortURLList[j] + '/', "i");
 
@@ -96,6 +97,7 @@
                         return container;
                     }
                 }
+                }
                 provider = $.fn.oembed.getOEmbedProvider(resourceURL);
 
                 //remove fallback
@@ -136,7 +138,8 @@
             console.log('err:', a, b, c, d)
         },
         ajaxOptions: {},
-        longUrlAjaxOptions: {}
+        longUrlAjaxOptions: {},
+        expandUrl: true,
     };
 
     /* Private functions */
