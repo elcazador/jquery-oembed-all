@@ -259,6 +259,27 @@
                 var width = embedProvider.embedtag.width || 'auto';
                 var height = embedProvider.embedtag.height || 'auto';
                 var src = externalUrl.replace(embedProvider.templateRegex, embedProvider.apiendpoint);
+                // Append to source the time if one was provided.
+                if (externalUrl.match(embedProvider.templateRegex).length > 2 && typeof externalUrl.match(embedProvider.templateRegex)[2] != 'undefined') {
+                  var time = externalUrl.match(embedProvider.templateRegex);
+                  var units = time[2].match(/[hms]+/g);
+                  var digits = time[2].match(/\d+/g);
+                  var seconds = 0;
+                  for (var i = 0; i < units.length;i++) {
+                    switch (units[i]) {
+                      case 'h':
+                        seconds += Number(digits[i] * 3600);
+                        break;
+                      case 'm':
+                        seconds += Number(digits[i] * 60);
+                        break;
+                      case 's':
+                        seconds += Number(digits[i]);
+                        break;
+                    }
+                  }
+                  src = src.concat('&start=' + seconds);
+                }
 
                 if (!embedProvider.nocache) {
                     src += '&jqoemcache=' + rand(5);
@@ -545,7 +566,7 @@
 
         //Video
         new $.fn.oembed.OEmbedProvider("youtube", "video", ["youtube\\.com/watch.+v=[\\w-]+&?", "youtu\\.be/[\\w-]+", "youtube.com/embed"], '//www.youtube.com/embed/$1?wmode=transparent', {
-            templateRegex: /.*(?:v\=|be\/|embed\/)([\w\-]+)&?.*/, embedtag: {tag: 'iframe', width: '425', height: '349'}
+            templateRegex: /.*(?:v\=|be\/|embed\/)([\w\-]+)(?:&[^t]=[\w]*)*(?:&t=([\d]+[hms](?:\d+[ms]){1,2}|[\d]+[h]|[\d]+[m]|[\d]+[s])?)?/,embedtag: {tag: 'iframe',width: '425',height: '349'}}),
         }),
 
         //new $.fn.oembed.OEmbedProvider("youtube", "video", ["youtube\\.com/watch.+v=[\\w-]+&?", "youtu\\.be/[\\w-]+"], 'http://www.youtube.com/oembed', {useYQL:'json'}),
